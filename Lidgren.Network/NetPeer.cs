@@ -180,15 +180,19 @@ namespace Lidgren.Network
 		/// <summary>
 		/// Read a pending message from any connection, blocking up to maxMillis if needed
 		/// </summary>
-		public NetIncomingMessage WaitMessage(int maxMillis)
-		{
-			var msg = ReadMessage();
-			if (msg != null)
-				return msg; // no need to wait; we already have a message to deliver
-			var msgEvt = MessageReceivedEvent;
-			msgEvt.WaitOne(maxMillis);
-			return ReadMessage();
-		}
+	        public NetIncomingMessage WaitMessage(int maxMillis)
+	        {
+	            NetIncomingMessage msg = ReadMessage();
+	
+		    // Temporary fix the issue when this method could return null.
+	            while (msg == null)
+	            {
+	                MessageReceivedEvent.WaitOne(maxMillis);
+	                msg = ReadMessage();
+	            }
+	
+	            return msg;
+	        }
 
 		/// <summary>
 		/// Read a pending message from any connection, if any
